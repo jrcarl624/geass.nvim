@@ -1,0 +1,23 @@
+*geass.txt* AI inline completions for Neovim.
+
+==============================================================================
+INTRODUCTION                                    *geass*
+
+geass.nvim provides ghost-text code completions from a local LLM using
+the fill-in-the-middle technique.
+
+Setup                                    *geass-setup*
+
+  require("geass").setup({...})
+
+See the README for full option reference.
+
+==============================================================================
+MAPPINGS                                        *geass-mappings*
+
+<Plug>(geass-trigger)             *geass-key-trigger*
+<Plug>(geass-accept)              *geass-key-accept*
+<Plug>(geass-dismiss)             *geass-key-dismiss*
+
+==============================================================================
+ vim:tw=78:ts=8:ft=help:norl:
