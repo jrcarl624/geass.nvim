@@ -2,7 +2,6 @@ local M = {}
 
 local providers = {
   ollama = "geass.providers.ollama",
-  opencode = "geass.providers.opencode",
 }
 
 M.resolve = function(name)

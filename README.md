@@ -52,6 +52,6 @@ Hits your local model with prefix+suffix around the cursor, streams back a compl
 ## roadmap
 
 - [x] ollama provider
-- [ ] automatic trigger on CursorMovedI
+- [x] automatic trigger on CursorHoldI
 - [ ] multi-candidate cycling
 - [ ] tests

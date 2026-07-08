@@ -24,8 +24,23 @@ M.defaults = {
 }
 
 M.current_edits = {}
+M._job_handle = nil
+M._job_id = 0
+
+M._cancel_job = function()
+  M._job_id = M._job_id + 1
+  if M._job_handle then
+    pcall(M._job_handle.kill, M._job_handle)
+    M._job_handle = nil
+  end
+end
 
 M.trigger_completion = function()
+  if M._job_handle then
+    return
+  end
+  local job_id = M._job_id
+
   local ctx = context.get_prefix_suffix({
     context_window = M.config.context_window,
     context_ratio = M.config.context_ratio,
@@ -35,8 +50,11 @@ M.trigger_completion = function()
   ctx.url = M.config.url
   ctx.timeout = M.config.timeout
 
-  vim.notify("[geass] generating...", vim.log.levels.INFO)
-  job.start_job(ctx, function(completion, err)
+  M._job_handle = job.start_job(ctx, function(completion, err)
+    if M._job_id ~= job_id then
+      return
+    end
+    M._job_handle = nil
     if err then
       vim.notify("[geass] " .. err, vim.log.levels.WARN)
       vim.print(err)
@@ -54,9 +72,11 @@ M.accept = function()
   end
   diff.apply(M.current_edits)
   M.current_edits = {}
+  M._cancel_job()
 end
 
 M.dismiss = function()
+  M._cancel_job()
   M.current_edits = {}
   vim.api.nvim_buf_clear_namespace(0, vim.api.nvim_create_namespace("geass-diff"), 0, -1)
 end
@@ -64,11 +84,22 @@ end
 M.setup = function(opts)
   M.config = vim.tbl_deep_extend("force", vim.deepcopy(M.defaults), opts or {})
   local group = vim.api.nvim_create_augroup("Geass", { clear = true })
+  vim.api.nvim_create_autocmd("CursorHoldI", {
+    group = group,
+    callback = M.trigger_completion,
+  })
   vim.api.nvim_create_autocmd("CursorMovedI", {
     group = group,
-    callback = function() end,
+    callback = function()
+      M._cancel_job()
+      M.current_edits = {}
+      vim.api.nvim_buf_clear_namespace(0, vim.api.nvim_create_namespace("geass-diff"), 0, -1)
+    end,
   })
-  vim.keymap.set("i", "<Plug>(geass-trigger)", M.trigger_completion)
+  vim.keymap.set("i", "<Plug>(geass-trigger)", function()
+      M._cancel_job()
+      M.trigger_completion()
+    end)
   vim.keymap.set("i", M.config.keymaps.trigger, "<Plug>(geass-trigger)")
   vim.keymap.set("i", M.config.keymaps.accept, M.accept)
   vim.keymap.set("i", M.config.keymaps.dismiss, M.dismiss)

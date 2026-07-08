@@ -7,7 +7,7 @@ M.start_job = function(ctx, on_exit)
     on_exit(nil, err)
     return
   end
-  mod.complete(ctx, function(text, err)
+  return mod.complete(ctx, function(text, err)
     on_exit(text, err)
   end)
 end

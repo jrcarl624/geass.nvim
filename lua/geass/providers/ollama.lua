@@ -3,6 +3,12 @@ local M = {}
 M.complete = function(ctx, callback)
   local prefix = ctx.prefix
   local suffix = ctx.suffix
+
+  if prefix == "" and suffix == "" then
+    callback("")
+    return
+  end
+
   local timeout = ctx.timeout
   -- local num_predict = ctx.num_predict or 512
   local temperature = ctx.temperature or 0.1
@@ -35,7 +41,7 @@ M.complete = function(ctx, callback)
     "-s",
   }
 
-  vim.system({ "curl", "-X", "POST", unpack(curl_args) }, nil, function(obj)
+  return vim.system({ "curl", "-X", "POST", unpack(curl_args) }, nil, function(obj)
     if obj.code ~= 0 then
       callback(nil, "curl exited with code " .. obj.code)
       return
