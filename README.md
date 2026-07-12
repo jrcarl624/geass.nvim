@@ -40,6 +40,16 @@ Hits your local model with prefix+suffix around the cursor, streams back a compl
 | `throttle`      | `1000`               | throttle interval (ms)             |
 | `context_window`| `16000`              | total chars sent to the model      |
 | `context_ratio` | `0.75`               | fraction of window for prefix      |
+| `enabled`       | `true`               | start enabled (toggle at runtime)  |
+
+### commands
+
+| command         | description                                  |
+|-----------------|----------------------------------------------|
+| `:Geass`        | toggle completions on/off (alias for `toggle`)|
+| `:Geass toggle` | flip enabled state                           |
+| `:Geass on`     | enable completions                           |
+| `:Geass off`    | disable completions (cancels in-flight + preview) |
 
 ### keymaps
 

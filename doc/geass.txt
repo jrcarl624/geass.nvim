@@ -19,5 +19,25 @@ MAPPINGS                                        *geass-mappings*
 <Plug>(geass-accept)              *geass-key-accept*
 <Plug>(geass-dismiss)             *geass-key-dismiss*
 
-==============================================================================
+===============================================================================
+COMMANDS                                         *geass-commands*
+
+:Geass                  *geass-:Geass*
+                        Toggle inline completions on/off.
+                        Completes to the subcommands below.
+
+:Geass toggle           *geass-:Geass-toggle*
+                        Flip the enabled state.
+
+:Geass on               *geass-:Geass-on*
+                        Enable completions.
+
+:Geass off              *geass-:Geass-off*
+                        Disable completions. Cancels any in-flight request
+                        and clears the current ghost-text preview.
+
+The `enabled` option (default `true`) controls the initial state at
+startup; see |geass-setup|.
+
+===============================================================================
  vim:tw=78:ts=8:ft=help:norl:

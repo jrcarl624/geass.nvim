@@ -13,6 +13,7 @@ M.defaults = {
   context_window = 16000,
   context_ratio = 0.75,
   timeout = 60,
+  enabled = true,
   keymaps = {
     trigger = "<M-CR>",
     accept = "<Tab>",
@@ -26,6 +27,7 @@ M.defaults = {
 M.current_edits = {}
 M._job_handle = nil
 M._job_id = 0
+M._enabled = true
 
 M._cancel_job = function()
   M._job_id = M._job_id + 1
@@ -35,7 +37,27 @@ M._cancel_job = function()
   end
 end
 
+M._clear_preview = function()
+  M.current_edits = {}
+  vim.api.nvim_buf_clear_namespace(0, vim.api.nvim_create_namespace("geass-diff"), 0, -1)
+end
+
+M._set_enabled = function(state)
+  M._enabled = state
+  if not state then
+    M._cancel_job()
+    M._clear_preview()
+  end
+end
+
+M.toggle = function()
+  M._set_enabled(not M._enabled)
+end
+
 M.trigger_completion = function()
+  if not M._enabled then
+    return
+  end
   if M._job_handle then
     return
   end
@@ -77,12 +99,12 @@ end
 
 M.dismiss = function()
   M._cancel_job()
-  M.current_edits = {}
-  vim.api.nvim_buf_clear_namespace(0, vim.api.nvim_create_namespace("geass-diff"), 0, -1)
+  M._clear_preview()
 end
 
 M.setup = function(opts)
   M.config = vim.tbl_deep_extend("force", vim.deepcopy(M.defaults), opts or {})
+  M._enabled = M.config.enabled
   local group = vim.api.nvim_create_augroup("Geass", { clear = true })
   vim.api.nvim_create_autocmd("CursorHoldI", {
     group = group,
@@ -92,8 +114,7 @@ M.setup = function(opts)
     group = group,
     callback = function()
       M._cancel_job()
-      M.current_edits = {}
-      vim.api.nvim_buf_clear_namespace(0, vim.api.nvim_create_namespace("geass-diff"), 0, -1)
+      M._clear_preview()
     end,
   })
   vim.keymap.set("i", "<Plug>(geass-trigger)", function()
@@ -103,5 +124,22 @@ M.setup = function(opts)
   vim.keymap.set("i", M.config.keymaps.trigger, "<Plug>(geass-trigger)")
   vim.keymap.set("i", M.config.keymaps.accept, M.accept)
   vim.keymap.set("i", M.config.keymaps.dismiss, M.dismiss)
+
+  vim.api.nvim_create_user_command("Geass", function(opts)
+    local sub = opts.fargs[1] or "toggle"
+    if sub == "on" then
+      M._set_enabled(true)
+    elseif sub == "off" then
+      M._set_enabled(false)
+    elseif sub == "toggle" then
+      M.toggle()
+    end
+  end, {
+    nargs = "?",
+    complete = function()
+      return { "on", "off", "toggle" }
+    end,
+    desc = "geass: on/off/toggle inline completions",
+  })
 end
 return M
